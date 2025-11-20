@@ -31,7 +31,7 @@
 
 **功能**:
 - **手动批改**: 教师可以输入分数和评语
-- **AI辅助批改**: 一键调用 Google Gemini API 进行智能评分
+- **AI辅助批改**: 一键调用 Google 智谱AI GLM API 进行智能评分
 - AI批改提供：
   - 自动评分 (0-100)
   - 优点分析 (strengths)
@@ -53,11 +53,11 @@
 
 ### 4. AI功能集成 (AI Functionality)
 **文件**:
-- `lib/gemini.ts` - 已存在的 Gemini API 集成
+- `lib/gemini.ts` - 已存在的 智谱AI GLM API 集成
 - `app/actions/assignments.ts` - AI批改服务器操作
 
 **功能**:
-- 使用 Google Gemini API (gemini-2.0-flash-exp)
+- 使用 Google 智谱AI GLM API (gemini-2.0-flash-exp)
 - JSON模式输出确保结构化数据
 - Token使用量追踪
 - 订阅状态检查和Token扣费使用事务保护

@@ -4,8 +4,8 @@ This document summarizes all the critical bug fixes applied to the IntelliTeach 
 
 ## Critical Bugs Fixed
 
-### 1. Gemini AI Response Parsing (lib/gemini.ts)
-**Problem**: JSON.parse would fail when Gemini AI returns JSON wrapped in markdown code blocks (```json ... ```) or with surrounding text.
+### 1. 智谱AI Response Parsing (lib/gemini.ts)
+**Problem**: JSON.parse would fail when 智谱AI returns JSON wrapped in markdown code blocks (```json ... ```) or with surrounding text.
 
 **Solution**: 
 - Remove markdown code block markers

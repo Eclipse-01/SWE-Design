@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-IntelliTeach 是一个基于 Next.js 14+ 的企业级 SaaS 多租户教学管理平台，完全按照《工程要求.md》中的规范要求实现。该系统支持多组织隔离管理，集成 Google Gemini API 实现智能化作业批改，采用"课程-作业"二级管理架构。
+IntelliTeach 是一个基于 Next.js 14+ 的企业级 SaaS 多租户教学管理平台，完全按照《工程要求.md》中的规范要求实现。该系统支持多组织隔离管理，集成智谱AI GLM-4-Flash实现智能化作业批改，采用"课程-作业"二级管理架构。
 
 ## 对应课程设计实验要求
 
@@ -214,7 +214,7 @@ Respond ONLY with valid JSON.`
 ### 1. 新颖性 (15%)
 
 - ✅ **SaaS 多租户架构**: 完整的组织隔离机制
-- ✅ **生成式 AI 深度集成**: Google Gemini 2.0 Flash 模型
+- ✅ **生成式 AI 深度集成**: 智谱AI GLM-4-Flash 模型
 - ✅ **JSON Mode AI 响应**: 结构化的批改结果
 - ✅ **订阅守卫机制**: 智能的 Token 管理系统
 
