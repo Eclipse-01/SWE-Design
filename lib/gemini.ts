@@ -71,23 +71,37 @@ export async function checkSubscriptionAndDeduct(
   organizationId: string,
   estimatedTokens: number
 ): Promise<boolean> {
-  const org = await prisma.organization.findUnique({
-    where: { idString: organizationId }
-  });
+  try {
+    // Use transaction with atomic update to prevent race condition
+    const result = await prisma.$transaction(async (tx) => {
+      const org = await tx.organization.findUnique({
+        where: { idString: organizationId }
+      });
 
-  if (!org) return false;
+      if (!org) return false;
 
-  // Check subscription status and balance
-  if (org.aiSubStatus !== 'ACTIVE') return false;
-  if (org.aiTokenUsage + estimatedTokens > org.aiTokenLimit) return false;
+      // Check subscription status and balance
+      if (org.aiSubStatus !== 'ACTIVE') return false;
+      if (org.aiTokenUsage + estimatedTokens > org.aiTokenLimit) return false;
 
-  // Deduct tokens
-  await prisma.organization.update({
-    where: { idString: organizationId },
-    data: {
-      aiTokenUsage: { increment: estimatedTokens }
-    }
-  });
+      // Deduct tokens atomically
+      await tx.organization.update({
+        where: { 
+          idString: organizationId,
+          // Add optimistic locking to ensure we're updating the expected state
+          aiTokenUsage: org.aiTokenUsage
+        },
+        data: {
+          aiTokenUsage: { increment: estimatedTokens }
+        }
+      });
 
-  return true;
+      return true;
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Token deduction error:", error);
+    return false;
+  }
 }

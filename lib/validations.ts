@@ -17,7 +17,6 @@ export const UpdateUserStatusSchema = z.object({
 // Organization validations
 export const CreateOrganizationSchema = z.object({
   name: z.string().min(2, "组织名称至少2个字"),
-  domain: z.string().optional(),
   aiTokenLimit: z.coerce.number().min(1000, "Token限制至少1000"),
 })
 

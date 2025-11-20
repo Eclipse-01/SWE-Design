@@ -14,7 +14,6 @@ export async function createOrganization(formData: FormData) {
 
   const data = {
     name: formData.get("name"),
-    domain: formData.get("domain") || undefined,
     aiTokenLimit: formData.get("aiTokenLimit") || "100000",
   }
 
@@ -23,7 +22,6 @@ export async function createOrganization(formData: FormData) {
   await prisma.organization.create({
     data: {
       name: validated.name,
-      domain: validated.domain,
       aiTokenLimit: validated.aiTokenLimit,
     }
   })

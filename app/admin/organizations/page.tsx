@@ -26,7 +26,6 @@ export default async function OrganizationsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>组织名称</TableHead>
-                <TableHead>域名</TableHead>
                 <TableHead>AI 订阅状态</TableHead>
                 <TableHead>Token 使用情况</TableHead>
                 <TableHead>用户数</TableHead>
@@ -37,7 +36,7 @@ export default async function OrganizationsPage() {
             <TableBody>
               {organizations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     暂无组织
                   </TableCell>
                 </TableRow>
@@ -45,7 +44,6 @@ export default async function OrganizationsPage() {
                 organizations.map((org) => (
                   <TableRow key={org.idString}>
                     <TableCell className="font-medium">{org.name}</TableCell>
-                    <TableCell>{org.domain || "-"}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         org.aiSubStatus === 'ACTIVE' ? 'bg-green-100 text-green-800' :
