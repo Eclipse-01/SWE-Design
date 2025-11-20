@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { prisma } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default async function StudentDashboard() {
@@ -8,6 +9,32 @@ export default async function StudentDashboard() {
   if (!session || session.user.role !== 'STUDENT') {
     redirect('/unauthorized')
   }
+
+  // Fetch real data from database
+  const enrollmentCount = await prisma.enrollment.count({
+    where: { userId: session.user.id }
+  })
+
+  const pendingAssignmentCount = await prisma.assignment.count({
+    where: {
+      course: {
+        enrollments: {
+          some: {
+            userId: session.user.id
+          }
+        }
+      },
+      status: 'PUBLISHED',
+      deadline: {
+        gte: new Date()
+      },
+      submissions: {
+        none: {
+          studentId: session.user.id
+        }
+      }
+    }
+  })
 
   return (
     <div className="p-8">
@@ -20,7 +47,7 @@ export default async function StudentDashboard() {
             <CardDescription>您参与的所有课程</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
+            <div className="text-3xl font-bold">{enrollmentCount}</div>
           </CardContent>
         </Card>
         
@@ -30,7 +57,7 @@ export default async function StudentDashboard() {
             <CardDescription>需要提交的作业</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
+            <div className="text-3xl font-bold">{pendingAssignmentCount}</div>
           </CardContent>
         </Card>
       </div>

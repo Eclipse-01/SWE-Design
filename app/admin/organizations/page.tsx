@@ -61,7 +61,9 @@ export default async function OrganizationsPage() {
                     <TableCell>{org._count.users}</TableCell>
                     <TableCell>{org._count.courses}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">编辑</Button>
+                      <Link href={`/admin/organizations/${org.idString}/edit`}>
+                        <Button variant="ghost" size="sm">编辑</Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))

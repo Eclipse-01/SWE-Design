@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { prisma } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default async function AdminDashboard() {
@@ -8,6 +9,16 @@ export default async function AdminDashboard() {
   if (!session || session.user.role !== 'SUPER_ADMIN') {
     redirect('/unauthorized')
   }
+
+  // Fetch real data from database
+  const organizationCount = await prisma.organization.count()
+  const activeUserCount = await prisma.user.count({
+    where: { status: 'ACTIVE' }
+  })
+  const organizations = await prisma.organization.findMany({
+    select: { aiTokenUsage: true }
+  })
+  const totalTokenUsage = organizations.reduce((sum, org) => sum + org.aiTokenUsage, 0)
 
   return (
     <div className="p-8">
@@ -20,7 +31,7 @@ export default async function AdminDashboard() {
             <CardDescription>系统中的组织总数</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
+            <div className="text-3xl font-bold">{organizationCount}</div>
           </CardContent>
         </Card>
         
@@ -30,7 +41,7 @@ export default async function AdminDashboard() {
             <CardDescription>当前活跃用户数量</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
+            <div className="text-3xl font-bold">{activeUserCount}</div>
           </CardContent>
         </Card>
         
@@ -40,7 +51,7 @@ export default async function AdminDashboard() {
             <CardDescription>总 Token 使用量</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
+            <div className="text-3xl font-bold">{totalTokenUsage.toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
