@@ -14,7 +14,6 @@ export async function createOrganization(formData: FormData) {
 
   const data = {
     name: formData.get("name"),
-    domain: formData.get("domain") || undefined,
     aiTokenLimit: formData.get("aiTokenLimit") || "100000",
   }
 
@@ -23,7 +22,6 @@ export async function createOrganization(formData: FormData) {
   await prisma.organization.create({
     data: {
       name: validated.name,
-      domain: validated.domain,
       aiTokenLimit: validated.aiTokenLimit,
     }
   })
@@ -32,20 +30,37 @@ export async function createOrganization(formData: FormData) {
   redirect("/admin/organizations")
 }
 
-export async function getOrganizations() {
+export async function getOrganizations(page: number = 1, perPage: number = 20) {
   const session = await auth()
   if (!session || session.user.role !== 'SUPER_ADMIN') {
     throw new Error("Unauthorized")
   }
 
-  return await prisma.organization.findMany({
-    include: {
-      _count: {
-        select: { users: true, courses: true }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const skip = (page - 1) * perPage
+
+  const [organizations, total] = await Promise.all([
+    prisma.organization.findMany({
+      include: {
+        _count: {
+          select: { users: true, courses: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: perPage
+    }),
+    prisma.organization.count()
+  ])
+
+  return {
+    organizations,
+    pagination: {
+      page,
+      perPage,
+      total,
+      totalPages: Math.ceil(total / perPage)
+    }
+  }
 }
 
 export async function updateOrganizationSubscription(

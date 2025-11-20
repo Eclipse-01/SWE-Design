@@ -4,8 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default async function OrganizationsPage() {
-  const organizations = await getOrganizations()
+export default async function OrganizationsPage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
+  const page = Number(searchParams.page) || 1
+  const { organizations, pagination } = await getOrganizations(page)
 
   return (
     <div className="p-8">
@@ -26,7 +31,6 @@ export default async function OrganizationsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>组织名称</TableHead>
-                <TableHead>域名</TableHead>
                 <TableHead>AI 订阅状态</TableHead>
                 <TableHead>Token 使用情况</TableHead>
                 <TableHead>用户数</TableHead>
@@ -37,7 +41,7 @@ export default async function OrganizationsPage() {
             <TableBody>
               {organizations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     暂无组织
                   </TableCell>
                 </TableRow>
@@ -45,7 +49,6 @@ export default async function OrganizationsPage() {
                 organizations.map((org) => (
                   <TableRow key={org.idString}>
                     <TableCell className="font-medium">{org.name}</TableCell>
-                    <TableCell>{org.domain || "-"}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         org.aiSubStatus === 'ACTIVE' ? 'bg-green-100 text-green-800' :
@@ -70,6 +73,36 @@ export default async function OrganizationsPage() {
               )}
             </TableBody>
           </Table>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="text-sm text-muted-foreground">
+                显示第 {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, pagination.total)} 条，共 {pagination.total} 条
+              </div>
+              <div className="flex gap-2">
+                <Link href={`/admin/organizations?page=${pagination.page - 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page === 1}
+                  >
+                    上一页
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-1 text-sm">
+                  第 {pagination.page} / {pagination.totalPages} 页
+                </div>
+                <Link href={`/admin/organizations?page=${pagination.page + 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page >= pagination.totalPages}
+                  >
+                    下一页
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

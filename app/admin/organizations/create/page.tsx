@@ -41,15 +41,6 @@ export default async function CreateOrganizationPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="domain">域名 (可选)</Label>
-                <Input 
-                  id="domain" 
-                  name="domain" 
-                  placeholder="例如: tsinghua.edu.cn" 
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="aiTokenLimit">AI Token 限制 *</Label>
                 <Input 
                   id="aiTokenLimit" 
