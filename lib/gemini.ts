@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { ZhipuAI } from "zhipuai-sdk-nodejs-v4"
 import { prisma } from "@/lib/db"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+const client = new ZhipuAI({ apiKey: process.env.GEMINI_API_KEY || "" })
 
 export interface GradingResult {
   score: number
@@ -15,13 +15,6 @@ export async function gradeSubmissionWithAI(
   submissionContent: string,
   maxScore: number
 ): Promise<GradingResult> {
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash-exp",
-    generationConfig: {
-      responseMimeType: "application/json"
-    }
-  })
-
   const prompt = `You are an academic grading assistant. Grade the following submission based on the assignment requirements.
 
 Assignment Requirements:
@@ -42,28 +35,41 @@ Task: Provide a comprehensive evaluation in JSON format with the following struc
 
 Respond ONLY with valid JSON.`
 
-  const result = await model.generateContent(prompt)
-  const response = await result.response
-  let text = response.text()
+  const response = await client.createCompletions({
+    model: "glm-4-flash",
+    messages: [
+      { role: "user", content: prompt }
+    ],
+    stream: false,
+    maxTokens: 4096,
+    temperature: 0.7
+  })
+
+  // Type guard to ensure response is not a stream
+  if ('choices' in response) {
+    let text = response.choices[0]?.message?.content || ""
   
-  // Fix: Remove Markdown code block markers
-  text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-  
-  try {
-    // Try to find the JSON start and end braces to prevent issues with surrounding text
-    const jsonStartIndex = text.indexOf('{');
-    const jsonEndIndex = text.lastIndexOf('}');
-    if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-      text = text.substring(jsonStartIndex, jsonEndIndex + 1);
-    }
+    // Fix: Remove Markdown code block markers
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    const parsed = JSON.parse(text) as GradingResult
-    // Ensure score is within bounds
-    parsed.score = Math.min(Math.max(parsed.score, 0), maxScore)
-    return parsed
-  } catch (error) {
-    console.error("AI JSON Parse Error:", text); // Log original text for debugging
-    throw new Error("AI 返回格式异常，无法解析评分结果")
+    try {
+      // Try to find the JSON start and end braces to prevent issues with surrounding text
+      const jsonStartIndex = text.indexOf('{');
+      const jsonEndIndex = text.lastIndexOf('}');
+      if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+        text = text.substring(jsonStartIndex, jsonEndIndex + 1);
+      }
+      
+      const parsed = JSON.parse(text) as GradingResult
+      // Ensure score is within bounds
+      parsed.score = Math.min(Math.max(parsed.score, 0), maxScore)
+      return parsed
+    } catch (error) {
+      console.error("AI JSON Parse Error:", text); // Log original text for debugging
+      throw new Error("AI 返回格式异常，无法解析评分结果")
+    }
+  } else {
+    throw new Error("AI 返回格式异常，接收到流式响应")
   }
 }
 
