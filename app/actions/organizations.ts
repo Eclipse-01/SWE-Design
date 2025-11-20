@@ -8,14 +8,15 @@ import { revalidatePath } from "next/cache"
 
 export async function createOrganization(formData: FormData) {
   const session = await auth()
-  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
     throw new Error("Unauthorized")
   }
 
+  const rawLimit = formData.get("aiTokenLimit")
   const data = {
     name: formData.get("name") as string,
     domain: formData.get("domain") as string || undefined,
-    aiTokenLimit: parseInt(formData.get("aiTokenLimit") as string),
+    aiTokenLimit: rawLimit ? rawLimit : "0",
   }
 
   const validated = CreateOrganizationSchema.parse(data)
@@ -34,7 +35,7 @@ export async function createOrganization(formData: FormData) {
 
 export async function getOrganizations() {
   const session = await auth()
-  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
     throw new Error("Unauthorized")
   }
 
@@ -55,7 +56,7 @@ export async function updateOrganizationSubscription(
   aiTokenLimit: number
 ) {
   const session = await auth()
-  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
     throw new Error("Unauthorized")
   }
 

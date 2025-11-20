@@ -10,7 +10,7 @@ export default async function TeacherLayout({
 }) {
   const session = await auth()
   
-  if (!session || (session.user as any).role !== 'TEACHER') {
+  if (!session || session.user.role !== 'TEACHER') {
     redirect('/unauthorized')
   }
 
