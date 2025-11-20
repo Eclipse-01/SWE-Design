@@ -52,28 +52,45 @@ export async function createUser(formData: FormData) {
   redirect("/admin/users")
 }
 
-export async function getUsers() {
+export async function getUsers(page: number = 1, perPage: number = 20) {
   const session = await auth()
   if (!session || session.user.role !== 'SUPER_ADMIN') {
     throw new Error("Unauthorized")
   }
 
-  return await prisma.user.findMany({
-    include: {
-      organization: {
-        select: {
-          name: true
+  const skip = (page - 1) * perPage
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      include: {
+        organization: {
+          select: {
+            name: true
+          }
+        },
+        _count: {
+          select: {
+            coursesOwned: true,
+            enrollments: true
+          }
         }
       },
-      _count: {
-        select: {
-          coursesOwned: true,
-          enrollments: true
-        }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: perPage
+    }),
+    prisma.user.count()
+  ])
+
+  return {
+    users,
+    pagination: {
+      page,
+      perPage,
+      total,
+      totalPages: Math.ceil(total / perPage)
+    }
+  }
 }
 
 export async function updateUserStatus(userId: string, status: 'ACTIVE' | 'BANNED' | 'PENDING') {

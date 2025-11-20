@@ -6,7 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default async function StudentCoursesPage() {
+export default async function StudentCoursesPage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
   const session = await auth()
   
   // Allow both STUDENT and SUPER_ADMIN
@@ -14,34 +18,52 @@ export default async function StudentCoursesPage() {
     redirect('/unauthorized')
   }
 
+  const page = Number(searchParams.page) || 1
+  const perPage = 20
+  const skip = (page - 1) * perPage
+
   // For SUPER_ADMIN, show all enrollments; for STUDENT, show only their enrollments
-  const enrollments = await prisma.enrollment.findMany({
-    where: session.user.role === 'SUPER_ADMIN' ? {} : {
-      userId: session.user.id
-    },
-    include: {
-      course: {
-        include: {
-          teacher: {
-            select: {
-              name: true
-            }
-          },
-          organization: {
-            select: {
-              name: true
-            }
-          },
-          _count: {
-            select: {
-              assignments: true
+  const where = session.user.role === 'SUPER_ADMIN' ? {} : {
+    userId: session.user.id
+  }
+
+  const [enrollments, total] = await Promise.all([
+    prisma.enrollment.findMany({
+      where,
+      include: {
+        course: {
+          include: {
+            teacher: {
+              select: {
+                name: true
+              }
+            },
+            organization: {
+              select: {
+                name: true
+              }
+            },
+            _count: {
+              select: {
+                assignments: true
+              }
             }
           }
         }
-      }
-    },
-    orderBy: { joinedAt: 'desc' }
-  })
+      },
+      orderBy: { joinedAt: 'desc' },
+      skip,
+      take: perPage
+    }),
+    prisma.enrollment.count({ where })
+  ])
+
+  const pagination = {
+    page,
+    perPage,
+    total,
+    totalPages: Math.ceil(total / perPage)
+  }
 
   return (
     <div className="p-8">
@@ -90,6 +112,36 @@ export default async function StudentCoursesPage() {
               )}
             </TableBody>
           </Table>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="text-sm text-muted-foreground">
+                显示第 {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, pagination.total)} 条，共 {pagination.total} 条
+              </div>
+              <div className="flex gap-2">
+                <Link href={`/student/courses?page=${pagination.page - 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page === 1}
+                  >
+                    上一页
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-1 text-sm">
+                  第 {pagination.page} / {pagination.totalPages} 页
+                </div>
+                <Link href={`/student/courses?page=${pagination.page + 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page >= pagination.totalPages}
+                  >
+                    下一页
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

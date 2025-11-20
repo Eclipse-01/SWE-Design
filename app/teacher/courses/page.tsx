@@ -6,7 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default async function TeacherCoursesPage() {
+export default async function TeacherCoursesPage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
   const session = await auth()
   
   // Allow both TEACHER and SUPER_ADMIN
@@ -14,26 +18,44 @@ export default async function TeacherCoursesPage() {
     redirect('/unauthorized')
   }
 
+  const page = Number(searchParams.page) || 1
+  const perPage = 20
+  const skip = (page - 1) * perPage
+
   // For SUPER_ADMIN, show all courses; for TEACHER, show only their courses
-  const courses = await prisma.course.findMany({
-    where: session.user.role === 'SUPER_ADMIN' ? {} : {
-      teacherId: session.user.id
-    },
-    include: {
-      organization: {
-        select: {
-          name: true
+  const where = session.user.role === 'SUPER_ADMIN' ? {} : {
+    teacherId: session.user.id
+  }
+
+  const [courses, total] = await Promise.all([
+    prisma.course.findMany({
+      where,
+      include: {
+        organization: {
+          select: {
+            name: true
+          }
+        },
+        _count: {
+          select: {
+            enrollments: true,
+            assignments: true
+          }
         }
       },
-      _count: {
-        select: {
-          enrollments: true,
-          assignments: true
-        }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: perPage
+    }),
+    prisma.course.count({ where })
+  ])
+
+  const pagination = {
+    page,
+    perPage,
+    total,
+    totalPages: Math.ceil(total / perPage)
+  }
 
   return (
     <div className="p-8">
@@ -85,6 +107,36 @@ export default async function TeacherCoursesPage() {
               )}
             </TableBody>
           </Table>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="text-sm text-muted-foreground">
+                显示第 {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, pagination.total)} 条，共 {pagination.total} 条
+              </div>
+              <div className="flex gap-2">
+                <Link href={`/teacher/courses?page=${pagination.page - 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page === 1}
+                  >
+                    上一页
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-1 text-sm">
+                  第 {pagination.page} / {pagination.totalPages} 页
+                </div>
+                <Link href={`/teacher/courses?page=${pagination.page + 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page >= pagination.totalPages}
+                  >
+                    下一页
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

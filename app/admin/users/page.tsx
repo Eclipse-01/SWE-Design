@@ -1,34 +1,24 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/db"
+import { getUsers } from "@/app/actions/users"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default async function UsersPage() {
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
   const session = await auth()
   
   if (!session || session.user.role !== 'SUPER_ADMIN') {
     redirect('/unauthorized')
   }
 
-  const users = await prisma.user.findMany({
-    include: {
-      organization: {
-        select: {
-          name: true
-        }
-      },
-      _count: {
-        select: {
-          coursesOwned: true,
-          enrollments: true
-        }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const page = Number(searchParams.page) || 1
+  const { users, pagination } = await getUsers(page)
 
   return (
     <div className="p-8">
@@ -99,6 +89,36 @@ export default async function UsersPage() {
               )}
             </TableBody>
           </Table>
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="text-sm text-muted-foreground">
+                显示第 {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, pagination.total)} 条，共 {pagination.total} 条
+              </div>
+              <div className="flex gap-2">
+                <Link href={`/admin/users?page=${pagination.page - 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page === 1}
+                  >
+                    上一页
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-1 text-sm">
+                  第 {pagination.page} / {pagination.totalPages} 页
+                </div>
+                <Link href={`/admin/users?page=${pagination.page + 1}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={pagination.page >= pagination.totalPages}
+                  >
+                    下一页
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
