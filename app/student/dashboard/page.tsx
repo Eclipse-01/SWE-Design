@@ -6,17 +6,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default async function StudentDashboard() {
   const session = await auth()
   
-  if (!session || session.user.role !== 'STUDENT') {
+  // Allow both STUDENT and SUPER_ADMIN
+  if (!session || (session.user.role !== 'STUDENT' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/unauthorized')
   }
 
   // Fetch real data from database
   const enrollmentCount = await prisma.enrollment.count({
-    where: { userId: session.user.id }
+    where: session.user.role === 'SUPER_ADMIN' ? {} : { userId: session.user.id }
   })
 
+  // Fix: Count pending assignments correctly - only those published and not yet submitted
+  // Don't filter by deadline to show overdue assignments as well
   const pendingAssignmentCount = await prisma.assignment.count({
-    where: {
+    where: session.user.role === 'SUPER_ADMIN' ? {
+      status: 'PUBLISHED',
+    } : {
       course: {
         enrollments: {
           some: {
@@ -25,12 +30,12 @@ export default async function StudentDashboard() {
         }
       },
       status: 'PUBLISHED',
-      deadline: {
-        gte: new Date()
-      },
       submissions: {
         none: {
-          studentId: session.user.id
+          studentId: session.user.id,
+          status: {
+            in: ['SUBMITTED', 'GRADED']
+          }
         }
       }
     }

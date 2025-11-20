@@ -10,7 +10,8 @@ export default async function TeacherLayout({
 }) {
   const session = await auth()
   
-  if (!session || session.user.role !== 'TEACHER') {
+  // Allow both TEACHER and SUPER_ADMIN to access teacher views
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/unauthorized')
   }
 

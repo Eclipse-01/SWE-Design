@@ -6,17 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default async function TeacherDashboard() {
   const session = await auth()
   
-  if (!session || session.user.role !== 'TEACHER') {
+  // Allow both TEACHER and SUPER_ADMIN
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/unauthorized')
   }
 
   // Fetch real data from database
   const coursesCount = await prisma.course.count({
-    where: { teacherId: session.user.id }
+    where: session.user.role === 'SUPER_ADMIN' ? {} : { teacherId: session.user.id }
   })
   
   const pendingGradingCount = await prisma.submission.count({
-    where: {
+    where: session.user.role === 'SUPER_ADMIN' ? {
+      status: 'SUBMITTED'
+    } : {
       assignment: {
         course: {
           teacherId: session.user.id

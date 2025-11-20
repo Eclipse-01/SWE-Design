@@ -10,7 +10,8 @@ export default async function StudentLayout({
 }) {
   const session = await auth()
   
-  if (!session || session.user.role !== 'STUDENT') {
+  // Allow both STUDENT and SUPER_ADMIN to access student views
+  if (!session || (session.user.role !== 'STUDENT' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/unauthorized')
   }
 

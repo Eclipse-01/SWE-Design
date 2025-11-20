@@ -9,12 +9,14 @@ import Link from "next/link"
 export default async function TeacherCoursesPage() {
   const session = await auth()
   
-  if (!session || session.user.role !== 'TEACHER') {
+  // Allow both TEACHER and SUPER_ADMIN
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/unauthorized')
   }
 
+  // For SUPER_ADMIN, show all courses; for TEACHER, show only their courses
   const courses = await prisma.course.findMany({
-    where: {
+    where: session.user.role === 'SUPER_ADMIN' ? {} : {
       teacherId: session.user.id
     },
     include: {

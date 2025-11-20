@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default async function UsersPage() {
   const session = await auth()
@@ -32,6 +34,9 @@ export default async function UsersPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">用户管理</h1>
+        <Link href="/admin/users/create">
+          <Button>创建用户</Button>
+        </Link>
       </div>
 
       <Card className="mica">

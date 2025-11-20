@@ -6,8 +6,20 @@ export const CreateUserSchema = z.object({
   email: z.string().email("请输入有效的邮箱地址"),
   password: z.string().min(6, "密码至少6个字符"),
   role: z.enum(["SUPER_ADMIN", "TEACHER", "STUDENT"]),
-  organizationId: z.string().uuid(),
-})
+  organizationId: z.string().uuid().optional(),
+}).refine(
+  (data) => {
+    // TEACHER and STUDENT must have an organizationId
+    if ((data.role === 'TEACHER' || data.role === 'STUDENT') && !data.organizationId) {
+      return false
+    }
+    return true
+  },
+  {
+    message: "教师和学生必须分配到组织",
+    path: ["organizationId"]
+  }
+)
 
 export const UpdateUserStatusSchema = z.object({
   userId: z.string().uuid(),

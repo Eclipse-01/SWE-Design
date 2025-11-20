@@ -3,16 +3,20 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default async function StudentCoursesPage() {
   const session = await auth()
   
-  if (!session || session.user.role !== 'STUDENT') {
+  // Allow both STUDENT and SUPER_ADMIN
+  if (!session || (session.user.role !== 'STUDENT' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/unauthorized')
   }
 
+  // For SUPER_ADMIN, show all enrollments; for STUDENT, show only their enrollments
   const enrollments = await prisma.enrollment.findMany({
-    where: {
+    where: session.user.role === 'SUPER_ADMIN' ? {} : {
       userId: session.user.id
     },
     include: {
@@ -43,6 +47,9 @@ export default async function StudentCoursesPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">我的课程</h1>
+        <Link href="/student/courses/join">
+          <Button>加入课程</Button>
+        </Link>
       </div>
 
       <Card className="mica">
