@@ -42,7 +42,6 @@ export const UpdateSubscriptionSchema = z.object({
 // Course validations
 export const CreateCourseSchema = z.object({
   name: z.string().min(2, "课程名称至少2个字"),
-  code: z.string().min(2, "课程代码至少2个字"),
   description: z.string().optional(),
 })
 

@@ -61,6 +61,9 @@ export default async function TeacherCoursesPage({
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">我的课程</h1>
+        <Link href="/teacher/courses/create">
+          <Button>+ 创建课程</Button>
+        </Link>
       </div>
 
       <Card className="mica">

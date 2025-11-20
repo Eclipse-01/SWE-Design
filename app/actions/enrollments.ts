@@ -18,15 +18,19 @@ export async function joinCourse(courseCode: string) {
 
   try {
     // Find course by code
-    const course = await prisma.course.findFirst({
+    const course = await prisma.course.findUnique({
       where: { 
-        code: courseCode.trim(),
-        archived: false
+        code: courseCode.trim().toUpperCase()
       }
     })
 
     if (!course) {
-      return { success: false, error: "课程代码不存在或已归档" }
+      return { success: false, error: "课程代码不存在" }
+    }
+
+    // Check if course is archived
+    if (course.archived) {
+      return { success: false, error: "该课程已归档" }
     }
 
     // Check if course belongs to student's organization
