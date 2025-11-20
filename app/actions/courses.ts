@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/db"
-import { CreateCourseSchema } from "@/lib/validations"
+import { CreateCourseSchema, UpdateCourseSchema } from "@/lib/validations"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -106,6 +106,55 @@ export async function archiveCourse(courseId: string) {
   } catch (error) {
     console.error("Archive course error:", error)
     return { success: false, error: "归档课程失败" }
+  }
+}
+
+export async function updateCourse(courseId: string, formData: FormData) {
+  const session = await auth()
+  
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
+    return { success: false, error: "未授权" }
+  }
+
+  try {
+    // Verify the course belongs to the teacher (unless super admin)
+    const course = await prisma.course.findUnique({
+      where: { idString: courseId }
+    })
+
+    if (!course) {
+      return { success: false, error: "课程不存在" }
+    }
+
+    if (session.user.role === 'TEACHER' && course.teacherId !== session.user.id) {
+      return { success: false, error: "您无权修改此课程" }
+    }
+
+    const data: any = {}
+    
+    if (formData.get("name")) {
+      data.name = formData.get("name") as string
+    }
+    if (formData.get("description") !== null) {
+      data.description = formData.get("description") as string || null
+    }
+
+    const validated = UpdateCourseSchema.parse(data)
+
+    await prisma.course.update({
+      where: { idString: courseId },
+      data: validated
+    })
+
+    revalidatePath(`/teacher/courses/${courseId}`)
+    revalidatePath("/teacher/courses")
+    return { success: true }
+  } catch (error) {
+    console.error("Update course error:", error)
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: "更新课程失败" }
   }
 }
 

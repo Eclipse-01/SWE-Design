@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import { AssignmentActions } from "@/components/assignments/assignment-actions"
+import { EditCourseDialog } from "@/components/courses/edit-course-dialog"
+import { EditAssignmentDialog } from "@/components/assignments/edit-assignment-dialog"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale/zh-CN"
 
@@ -171,12 +173,26 @@ export default async function CourseDetailPage({
                   ) : (
                     assignments.map((assignment) => (
                       <TableRow key={assignment.id}>
-                        <TableCell className="font-medium">{assignment.title}</TableCell>
+                        <TableCell className="font-medium">
+                          <Link 
+                            href={`/teacher/courses/${params.courseId}/assignments/${assignment.id}`}
+                            className="hover:underline"
+                          >
+                            {assignment.title}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           {format(new Date(assignment.deadline), 'PPP', { locale: zhCN })}
                         </TableCell>
                         <TableCell>{assignment.maxScore}</TableCell>
-                        <TableCell>{assignment._count.submissions}</TableCell>
+                        <TableCell>
+                          <Link 
+                            href={`/teacher/courses/${params.courseId}/assignments/${assignment.id}`}
+                            className="hover:underline text-blue-600"
+                          >
+                            {assignment._count.submissions}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             assignment.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' :
@@ -187,7 +203,14 @@ export default async function CourseDetailPage({
                              assignment.status === 'DRAFT' ? '草稿' : '已归档'}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right space-x-2">
+                          <EditAssignmentDialog
+                            assignmentId={assignment.id}
+                            currentTitle={assignment.title}
+                            currentDescription={assignment.description}
+                            currentDeadline={assignment.deadline}
+                            currentMaxScore={assignment.maxScore}
+                          />
                           <AssignmentActions
                             assignmentId={assignment.id}
                             assignmentTitle={assignment.title}
@@ -247,8 +270,17 @@ export default async function CourseDetailPage({
         <TabsContent value="settings" className="mt-6">
           <Card className="mica">
             <CardHeader>
-              <CardTitle>课程设置</CardTitle>
-              <CardDescription>管理课程基本信息</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>课程设置</CardTitle>
+                  <CardDescription>管理课程基本信息</CardDescription>
+                </div>
+                <EditCourseDialog 
+                  courseId={params.courseId}
+                  currentName={course.name}
+                  currentDescription={course.description}
+                />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
