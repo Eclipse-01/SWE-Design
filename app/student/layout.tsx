@@ -16,28 +16,28 @@ export default async function StudentLayout({
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-transparent">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r mica flex flex-col">
+      <aside className="w-64 acrylic border-r flex flex-col m-2 rounded-lg h-[calc(100vh-1rem)] sticky top-2">
         <div className="p-6 flex-1">
-          <h2 className="text-2xl font-bold mb-8">IntelliTeach</h2>
-          <nav className="space-y-2">
+          <h2 className="text-2xl font-bold mb-8 px-2">IntelliTeach</h2>
+          <nav className="space-y-1">
             <Link href="/student/dashboard">
-              <Button variant="ghost" className="w-full justify-start">
-                📊 学习中心
+              <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                <span className="mr-2">📊</span> 学习中心
               </Button>
             </Link>
             <Link href="/student/courses">
-              <Button variant="ghost" className="w-full justify-start">
-                📚 我的课程
+              <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                <span className="mr-2">📚</span> 我的课程
               </Button>
             </Link>
           </nav>
         </div>
         
         {/* User info and logout */}
-        <div className="p-6 border-t">
-          <div className="mb-3">
+        <div className="p-4 border-t border-border/50">
+          <div className="mb-3 px-2">
             <p className="text-sm font-medium">{session.user.name}</p>
             <p className="text-xs text-muted-foreground">{session.user.email}</p>
           </div>
@@ -45,16 +45,18 @@ export default async function StudentLayout({
             "use server"
             await signOut({ redirectTo: "/login" })
           }}>
-            <Button type="submit" variant="outline" className="w-full">
-              🚪 退出登录
+            <Button type="submit" variant="outline" className="w-full justify-start">
+              <span className="mr-2">🚪</span> 退出登录
             </Button>
           </form>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 bg-background">
-        {children}
+      <main className="flex-1 p-2 overflow-auto h-screen">
+        <div className="h-full rounded-lg bg-background/50 backdrop-blur-sm border border-white/10 shadow-sm overflow-auto">
+          {children}
+        </div>
       </main>
     </div>
   )

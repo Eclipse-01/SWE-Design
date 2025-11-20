@@ -101,7 +101,11 @@ export default async function StudentCoursesPage({
               ) : (
                 enrollments.map((enrollment) => (
                   <TableRow key={enrollment.id}>
-                    <TableCell className="font-medium">{enrollment.course.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/student/courses/${enrollment.course.idString}`} className="hover:underline text-primary">
+                        {enrollment.course.name}
+                      </Link>
+                    </TableCell>
                     <TableCell>{enrollment.course.code}</TableCell>
                     <TableCell>{enrollment.course.teacher.name}</TableCell>
                     <TableCell>{enrollment.course.organization.name}</TableCell>

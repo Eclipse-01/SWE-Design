@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/db"
-import { CreateAssignmentSchema, UpdateAssignmentSchema } from "@/lib/validations"
+import { CreateAssignmentSchema, UpdateAssignmentSchema, CreateSubmissionSchema } from "@/lib/validations"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
 
@@ -152,5 +152,93 @@ export async function deleteAssignment(assignmentId: string) {
   } catch (error) {
     console.error("Delete assignment error:", error)
     return { success: false, error: "删除作业失败" }
+  }
+}
+
+export async function submitAssignment(formData: FormData) {
+  const session = await auth()
+  
+  if (!session || session.user.role !== 'STUDENT') {
+    return { success: false, error: "未授权：仅学生可以提交作业" }
+  }
+
+  try {
+    const data = {
+      content: formData.get("content") as string,
+      assignmentId: formData.get("assignmentId") as string,
+    }
+
+    const validated = CreateSubmissionSchema.parse(data)
+
+    // Verify assignment exists and is active
+    const assignment = await prisma.assignment.findUnique({
+      where: { id: validated.assignmentId },
+      include: { course: true }
+    })
+
+    if (!assignment) {
+      return { success: false, error: "作业不存在" }
+    }
+
+    if (assignment.status !== 'PUBLISHED') {
+      return { success: false, error: "作业未发布" }
+    }
+
+    if (new Date() > assignment.deadline) {
+      return { success: false, error: "作业已截止" }
+    }
+
+    // Verify enrollment
+    const enrollment = await prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId: session.user.id,
+          courseId: assignment.courseId
+        }
+      }
+    })
+
+    if (!enrollment) {
+      return { success: false, error: "您未选修此课程" }
+    }
+
+    // Check if already submitted
+    const existingSubmission = await prisma.submission.findFirst({
+      where: {
+        studentId: session.user.id,
+        assignmentId: validated.assignmentId
+      }
+    })
+
+    if (existingSubmission) {
+      // Update existing submission
+      await prisma.submission.update({
+        where: { id: existingSubmission.id },
+        data: {
+          content: validated.content,
+          submittedAt: new Date(),
+          status: 'SUBMITTED'
+        }
+      })
+    } else {
+      // Create new submission
+      await prisma.submission.create({
+        data: {
+          content: validated.content,
+          studentId: session.user.id,
+          assignmentId: validated.assignmentId,
+          status: 'SUBMITTED'
+        }
+      })
+    }
+
+    revalidatePath(`/student/courses/${assignment.courseId}/assignments/${validated.assignmentId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Submit assignment error:", error)
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: "提交作业失败" }
   }
 }
