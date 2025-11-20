@@ -12,11 +12,10 @@ export async function createOrganization(formData: FormData) {
     throw new Error("Unauthorized")
   }
 
-  const rawLimit = formData.get("aiTokenLimit")
   const data = {
-    name: formData.get("name") as string,
-    domain: formData.get("domain") as string || undefined,
-    aiTokenLimit: rawLimit ? rawLimit : "0",
+    name: formData.get("name"),
+    domain: formData.get("domain") || undefined,
+    aiTokenLimit: formData.get("aiTokenLimit") || "100000",
   }
 
   const validated = CreateOrganizationSchema.parse(data)
@@ -30,7 +29,7 @@ export async function createOrganization(formData: FormData) {
   })
 
   revalidatePath("/admin/organizations")
-  return { success: true }
+  redirect("/admin/organizations")
 }
 
 export async function getOrganizations() {
