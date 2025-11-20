@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { UserRole, UserStatus } from "@prisma/client"
 
 export const authConfig = {
   providers: [
@@ -43,7 +44,7 @@ export const authConfig = {
           name: user.name,
           role: user.role,
           status: user.status,
-          organizationId: user.organizationId,
+          organizationId: user.organizationId ?? undefined,
         }
       }
     })
@@ -57,13 +58,15 @@ export const authConfig = {
       const isOnDashboard = nextUrl.pathname.startsWith('/admin') || 
                            nextUrl.pathname.startsWith('/teacher') || 
                            nextUrl.pathname.startsWith('/student')
+      const isOnAuthPage = nextUrl.pathname.startsWith('/login') || 
+                           nextUrl.pathname.startsWith('/register')
       
       if (isOnDashboard) {
         if (isLoggedIn) return true
         return false
-      } else if (isLoggedIn) {
-        // Redirect logged-in users to their dashboard
-        const role = (auth.user as any).role
+      } else if (isLoggedIn && isOnAuthPage) {
+        // Redirect logged-in users away from login/register pages to their dashboard
+        const role = auth.user.role
         if (role === 'SUPER_ADMIN') {
           return Response.redirect(new URL('/admin/dashboard', nextUrl))
         } else if (role === 'TEACHER') {
@@ -77,18 +80,18 @@ export const authConfig = {
     },
     jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role
-        token.organizationId = (user as any).organizationId
-        token.status = (user as any).status
+        token.role = user.role
+        token.organizationId = user.organizationId
+        token.status = user.status
       }
       return token
     },
     session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role as string
-        (session.user as any).organizationId = token.organizationId as string
-        (session.user as any).status = token.status as string
-        (session.user as any).id = token.sub as string
+        session.user.role = token.role as UserRole
+        session.user.organizationId = token.organizationId as string | undefined
+        session.user.status = token.status as UserStatus
+        session.user.id = token.sub as string
       }
       return session
     }

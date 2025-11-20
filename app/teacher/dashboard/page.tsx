@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default async function TeacherDashboard() {
   const session = await auth()
   
-  if (!session || (session.user as any).role !== 'TEACHER') {
+  if (!session || session.user.role !== 'TEACHER') {
     redirect('/unauthorized')
   }
 

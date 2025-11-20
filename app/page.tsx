@@ -15,16 +15,12 @@ export default function HomePage() {
             智能教学辅助系统 - 基于 AI 的 SaaS 多租户教学管理平台
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/login">
-              <Button size="lg" className="text-lg">
-                登录
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="lg" variant="outline" className="text-lg">
-                注册
-              </Button>
-            </Link>
+            <Button asChild size="lg" className="text-lg">
+              <Link href="/login">登录</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="text-lg">
+              <Link href="/register">注册</Link>
+            </Button>
           </div>
         </div>
       </section>

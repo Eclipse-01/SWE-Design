@@ -10,7 +10,7 @@ export default async function StudentLayout({
 }) {
   const session = await auth()
   
-  if (!session || (session.user as any).role !== 'STUDENT') {
+  if (!session || session.user.role !== 'STUDENT') {
     redirect('/unauthorized')
   }
 

@@ -10,7 +10,7 @@ export default async function AdminLayout({
 }) {
   const session = await auth()
   
-  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
     redirect('/unauthorized')
   }
 
