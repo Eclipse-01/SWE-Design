@@ -1,7 +1,8 @@
-import { auth } from "@/auth"
+import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 
 export default async function AdminLayout({
   children,
@@ -17,8 +18,8 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r mica">
-        <div className="p-6">
+      <aside className="w-64 bg-card border-r mica flex flex-col">
+        <div className="p-6 flex-1">
           <h2 className="text-2xl font-bold mb-8">IntelliTeach</h2>
           <nav className="space-y-2">
             <Link href="/admin/dashboard">
@@ -36,7 +37,28 @@ export default async function AdminLayout({
                 👥 用户管理
               </Button>
             </Link>
+            <Link href="/admin/courses">
+              <Button variant="ghost" className="w-full justify-start">
+                📚 课程管理
+              </Button>
+            </Link>
           </nav>
+        </div>
+        
+        {/* User info and logout */}
+        <div className="p-6 border-t">
+          <div className="mb-3">
+            <p className="text-sm font-medium">{session.user.name}</p>
+            <p className="text-xs text-muted-foreground">{session.user.email}</p>
+          </div>
+          <form action={async () => {
+            "use server"
+            await signOut({ redirectTo: "/login" })
+          }}>
+            <Button type="submit" variant="outline" className="w-full">
+              🚪 退出登录
+            </Button>
+          </form>
         </div>
       </aside>
 
