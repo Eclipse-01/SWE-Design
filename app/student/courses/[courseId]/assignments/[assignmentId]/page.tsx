@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import { CalendarIcon, ArrowLeftIcon } from "lucide-react"
+import { CalendarIcon, ArrowLeftIcon, Sparkles, CheckCircle2, AlertCircle } from "lucide-react"
 import { SubmissionForm } from "@/components/assignments/submission-form"
 import { Separator } from "@/components/ui/separator"
 
@@ -104,7 +104,41 @@ export default async function AssignmentPage({
                       {submission.teacherFeedback && (
                         <div className="mt-2">
                           <span className="text-sm font-medium">教师评语:</span>
-                          <p className="text-sm text-muted-foreground mt-1">{submission.teacherFeedback}</p>
+                          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{submission.teacherFeedback}</p>
+                        </div>
+                      )}
+                      {submission.aiAnalysis && (
+                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-md border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Sparkles className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">AI 分析</span>
+                          </div>
+                          {(submission.aiAnalysis as any).strengths && (submission.aiAnalysis as any).strengths.length > 0 && (
+                            <div className="mb-2">
+                              <div className="flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400 mb-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                优点
+                              </div>
+                              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+                                {(submission.aiAnalysis as any).strengths.map((strength: string, idx: number) => (
+                                  <li key={idx}>{strength}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {(submission.aiAnalysis as any).weaknesses && (submission.aiAnalysis as any).weaknesses.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-1 text-xs font-medium text-orange-700 dark:text-orange-400 mb-1">
+                                <AlertCircle className="h-3 w-3" />
+                                待改进
+                              </div>
+                              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+                                {(submission.aiAnalysis as any).weaknesses.map((weakness: string, idx: number) => (
+                                  <li key={idx}>{weakness}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

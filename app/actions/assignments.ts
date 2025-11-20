@@ -1,9 +1,10 @@
 "use server"
 
 import { prisma } from "@/lib/db"
-import { CreateAssignmentSchema, UpdateAssignmentSchema, CreateSubmissionSchema } from "@/lib/validations"
+import { CreateAssignmentSchema, UpdateAssignmentSchema, CreateSubmissionSchema, GradeSubmissionSchema } from "@/lib/validations"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
+import { gradeSubmissionWithAI, checkSubscriptionAndDeduct } from "@/lib/gemini"
 
 export async function createAssignment(formData: FormData) {
   const session = await auth()
@@ -240,5 +241,136 @@ export async function submitAssignment(formData: FormData) {
       return { success: false, error: error.message }
     }
     return { success: false, error: "提交作业失败" }
+  }
+}
+
+export async function gradeSubmission(formData: FormData) {
+  const session = await auth()
+  
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
+    return { success: false, error: "未授权：仅教师可以批改作业" }
+  }
+
+  try {
+    const data = {
+      submissionId: formData.get("submissionId") as string,
+      score: formData.get("score") as string,
+      teacherFeedback: formData.get("teacherFeedback") as string || undefined,
+    }
+
+    const validated = GradeSubmissionSchema.parse(data)
+
+    // Get submission with assignment and course info
+    const submission = await prisma.submission.findUnique({
+      where: { id: validated.submissionId },
+      include: {
+        assignment: {
+          include: {
+            course: true
+          }
+        }
+      }
+    })
+
+    if (!submission) {
+      return { success: false, error: "提交不存在" }
+    }
+
+    // Verify ownership (unless super admin)
+    if (session.user.role === 'TEACHER' && submission.assignment.course.teacherId !== session.user.id) {
+      return { success: false, error: "您无权批改此作业" }
+    }
+
+    // Update submission with grade
+    await prisma.submission.update({
+      where: { id: validated.submissionId },
+      data: {
+        score: validated.score,
+        teacherFeedback: validated.teacherFeedback,
+        status: 'GRADED'
+      }
+    })
+
+    revalidatePath(`/teacher/courses/${submission.assignment.courseId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Grade submission error:", error)
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: "批改作业失败" }
+  }
+}
+
+export async function gradeSubmissionWithAIAction(submissionId: string) {
+  const session = await auth()
+  
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
+    return { success: false, error: "未授权：仅教师可以使用AI批改" }
+  }
+
+  try {
+    // Get submission with assignment and course info
+    const submission = await prisma.submission.findUnique({
+      where: { id: submissionId },
+      include: {
+        assignment: {
+          include: {
+            course: {
+              include: {
+                organization: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!submission) {
+      return { success: false, error: "提交不存在" }
+    }
+
+    // Verify ownership (unless super admin)
+    if (session.user.role === 'TEACHER' && submission.assignment.course.teacherId !== session.user.id) {
+      return { success: false, error: "您无权批改此作业" }
+    }
+
+    // Check subscription and deduct tokens
+    const estimatedTokens = 1000 // Estimate tokens for grading
+    const canUseAI = await checkSubscriptionAndDeduct(
+      submission.assignment.course.organizationId,
+      estimatedTokens
+    )
+
+    if (!canUseAI) {
+      return { success: false, error: "AI 服务额度已耗尽或订阅过期，请联系管理员" }
+    }
+
+    // Call AI grading
+    const aiResult = await gradeSubmissionWithAI(
+      submission.assignment.description,
+      submission.content,
+      submission.assignment.maxScore
+    )
+
+    // Update submission with AI results
+    await prisma.submission.update({
+      where: { id: submissionId },
+      data: {
+        score: aiResult.score,
+        teacherFeedback: aiResult.feedback,
+        aiAnalysis: aiResult as any,
+        status: 'GRADED'
+      }
+    })
+
+    revalidatePath(`/teacher/courses/${submission.assignment.courseId}`)
+    return { success: true, result: aiResult }
+  } catch (error) {
+    console.error("AI grade submission error:", error)
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: "AI批改失败" }
   }
 }
