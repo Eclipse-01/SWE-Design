@@ -70,6 +70,7 @@ GEMINI_API_KEY="your-gemini-api-key-here"
 ```bash
 npx prisma migrate dev --name init
 npx prisma generate
+npm run db:seed  # 创建默认超级管理员账户
 ```
 
 5. 启动开发服务器
@@ -79,6 +80,15 @@ npm run dev
 ```
 
 访问 http://localhost:3000
+
+### 默认管理员账户
+
+首次安装后，使用种子脚本创建的默认管理员账户：
+
+- 邮箱: `admin@intelliteach.com`
+- 密码: `admin123`
+
+**⚠️ 重要**: 首次登录后请立即修改密码（功能待实现）。
 
 ## 项目结构
 
@@ -152,17 +162,21 @@ npm run dev
 系统实现了 AI Token 使用控制：
 
 - 每个组织有 Token 使用限制
-- 调用 AI 前检查额度
+- 调用 AI 前检查额度（使用事务防止并发竞争）
 - 自动记录 Token 消耗
 - 额度耗尽时拒绝调用
+
+**⚠️ 重要**: Token 月度重置功能尚未实现。管理员需要在每月初手动重置组织的 `aiTokenUsage`。详见 [SECURITY_AND_IMPLEMENTATION_NOTES.md](./SECURITY_AND_IMPLEMENTATION_NOTES.md#token-monthly-reset-not-implemented)。
 
 ## 安全特性
 
 - ✅ **Zod 全链路校验** - 所有输入数据严格验证
 - ✅ **JWT 认证** - 基于 NextAuth.js 的安全认证
-- ✅ **数据隔离** - 多租户数据严格隔离
+- ✅ **数据隔离** - 多租户数据严格隔离（教师/学生必须分配组织）
 - ✅ **密码加密** - bcrypt 加密存储
 - ✅ **错误边界** - 优雅的错误处理
+- ✅ **防并发竞争** - AI Token 扣费使用事务保护
+- ✅ **唯一性约束** - 课程代码、组织名称、用户邮箱等关键字段强制唯一
 
 ## 开发指南
 
@@ -197,11 +211,32 @@ npx shadcn-ui@latest add <component-name>
 
 ## 部署
 
+### 重要: 数据库迁移
+
+如果从旧版本升级，必须先运行数据库迁移：
+
+```bash
+# 1. 备份数据库（重要！）
+pg_dump intelliteach > backup.sql
+
+# 2. 检查是否有重复的课程代码（必须在迁移前解决）
+psql intelliteach -c "SELECT code, COUNT(*) FROM \"Course\" GROUP BY code HAVING COUNT(*) > 1;"
+
+# 3. 生成 Prisma 客户端
+npx prisma generate
+
+# 4. 运行迁移
+npx prisma migrate deploy
+```
+
+详细迁移说明请参阅 [SECURITY_AND_IMPLEMENTATION_NOTES.md](./SECURITY_AND_IMPLEMENTATION_NOTES.md#database-migration)。
+
 ### Vercel 部署
 
 1. 连接 GitHub 仓库到 Vercel
-2. 配置环境变量
-3. 部署即可
+2. 配置环境变量（DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL, GEMINI_API_KEY）
+3. 在 Vercel 中配置 PostgreSQL 数据库
+4. 部署前确保已运行数据库迁移
 
 ### 自托管部署
 
@@ -217,12 +252,27 @@ npm run build
 npm start
 ```
 
+3. **重要**: 设置每月 Token 重置提醒或自动化任务
+
 ## 文档
 
+### 项目文档
 - [需求规格说明书](./工程要求.md) - 完整的项目需求文档
+- [安全与实现说明](./SECURITY_AND_IMPLEMENTATION_NOTES.md) - 安全修复、已知限制和实现细节
+- [Bug 修复记录](./BUGFIXES.md) - 已修复的 Bug 清单
+
+### 技术文档
 - [Prisma 文档](https://www.prisma.io/docs)
 - [Next.js 文档](https://nextjs.org/docs)
 - [ShadCN UI 文档](https://ui.shadcn.com)
+
+## 已知限制
+
+1. **Token 月度重置**: 需要手动重置或设置自动化任务（详见 [SECURITY_AND_IMPLEMENTATION_NOTES.md](./SECURITY_AND_IMPLEMENTATION_NOTES.md#token-monthly-reset-not-implemented)）
+2. **用户密码修改**: 功能尚未实现
+3. **用户头像上传**: 功能尚未实现
+
+完整的已知限制和未来改进计划请参阅 [SECURITY_AND_IMPLEMENTATION_NOTES.md](./SECURITY_AND_IMPLEMENTATION_NOTES.md#future-improvements)。
 
 ## 许可证
 
