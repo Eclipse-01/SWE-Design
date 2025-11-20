@@ -4,12 +4,12 @@
 
 ## 项目概述
 
-IntelliTeach 是一个支持多组织隔离管理的智能教学辅助系统。系统采用"课程-作业"二级管理架构，集成 Google Gemini API 实现作业的自动化批改与反馈。
+IntelliTeach 是一个支持多组织隔离管理的智能教学辅助系统。系统采用"课程-作业"二级管理架构，集成智谱AI GLM-4-Flash模型实现作业的自动化批改与反馈。
 
 ### 核心特性
 
 - ✅ **SaaS 多租户架构** - 支持多个教育机构独立管理
-- ✅ **AI 智能批改** - 基于 Google Gemini API 的自动化作业评分
+- ✅ **AI 智能批改** - 基于智谱AI GLM-4-Flash的自动化作业评分
 - ✅ **课程作业管理** - 完整的二级管理架构
 - ✅ **角色权限管理** - 支持超级管理员、教师、学生三种角色
 - ✅ **数据隔离** - 严格的多租户数据隔离机制
@@ -23,7 +23,7 @@ IntelliTeach 是一个支持多组织隔离管理的智能教学辅助系统。�
 - **UI System**: ShadCN UI (Radix UI + Tailwind CSS)
 - **Database**: PostgreSQL
 - **ORM**: Prisma
-- **AI Engine**: Google Gemini API (gemini-2.0-flash-exp)
+- **AI Engine**: 智谱AI GLM-4-Flash (glm-4-flash)
 - **Auth**: NextAuth.js v5
 - **Forms**: React Hook Form + Zod
 
@@ -62,7 +62,7 @@ cp .env.example .env
 DATABASE_URL="postgresql://user:password@localhost:5432/intelliteach"
 NEXTAUTH_SECRET="your-secret-key-here"
 NEXTAUTH_URL="http://localhost:3000"
-GEMINI_API_KEY="your-gemini-api-key-here"
+GEMINI_API_KEY="your-zhipu-api-key-here"
 ```
 
 4. 初始化数据库
@@ -106,7 +106,7 @@ npm run dev
 │   ├── db.ts             # Prisma 客户端
 │   ├── auth-config.ts    # 认证配置
 │   ├── validations.ts    # Zod 验证模式
-│   └── gemini.ts         # Gemini AI 集成
+│   └── gemini.ts         # 智谱AI GLM集成
 ├── prisma/               # Prisma 配置
 │   └── schema.prisma     # 数据库模型
 └── middleware.ts         # Next.js 中间件
@@ -150,7 +150,7 @@ npm run dev
 
 ## AI 批改功能
 
-系统集成 Google Gemini API，提供智能化的作业批改功能：
+系统集成智谱AI GLM-4-Flash模型，提供智能化的作业批改功能：
 
 1. **自动评分** - 基于作业要求自动生成分数
 2. **优点分析** - 识别学生作业的优点

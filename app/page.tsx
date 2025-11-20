@@ -46,7 +46,7 @@ export default function HomePage() {
           <Card className="mica">
             <CardHeader>
               <CardTitle>AI 智能批改</CardTitle>
-              <CardDescription>基于 Google Gemini 的自动化作业批改</CardDescription>
+              <CardDescription>基于智谱AI GLM-4-Flash的自动化作业批改</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">

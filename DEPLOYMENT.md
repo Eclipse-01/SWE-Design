@@ -11,7 +11,7 @@
 ### 1.2 所需服务
 
 - **数据库**: PostgreSQL 实例
-- **API 密钥**: Google Gemini API Key
+- **API 密钥**: 智谱AI API Key
 
 ## 2. 本地开发部署
 
@@ -46,8 +46,8 @@ DATABASE_URL="postgresql://username:password@localhost:5432/intelliteach"
 NEXTAUTH_SECRET="your-random-secret-key-here"  # 使用 openssl rand -base64 32 生成
 NEXTAUTH_URL="http://localhost:3000"
 
-# Google Gemini API
-GEMINI_API_KEY="your-gemini-api-key"  # 从 https://ai.google.dev/ 获取
+# 智谱AI API
+GEMINI_API_KEY="your-zhipu-api-key"  # 从 https://open.bigmodel.cn/ 获取
 ```
 
 ### 2.4 初始化数据库
@@ -396,7 +396,7 @@ sudo certbot renew --dry-run
 - [ ] 使用强密码的 PostgreSQL 数据库
 - [ ] 生成安全的 NEXTAUTH_SECRET (至少 32 字符)
 - [ ] 配置正确的 NEXTAUTH_URL (生产域名)
-- [ ] 有效的 Gemini API Key
+- [ ] 有效的智谱AI API Key
 - [ ] 数据库定期备份
 - [ ] 配置 HTTPS/SSL
 - [ ] 设置防火墙规则
