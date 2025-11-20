@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { CourseActions } from "@/components/courses/course-actions"
 
-export default async function TeacherCoursesPage({
+export default async function AdminCoursesPage({
   searchParams,
 }: {
   searchParams: { page?: string }
 }) {
   const session = await auth()
   
-  // Allow both TEACHER and SUPER_ADMIN
-  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
     redirect('/unauthorized')
   }
 
@@ -23,18 +22,19 @@ export default async function TeacherCoursesPage({
   const perPage = 20
   const skip = (page - 1) * perPage
 
-  // For SUPER_ADMIN, show all courses; for TEACHER, show only their courses
-  const where = session.user.role === 'SUPER_ADMIN' ? {} : {
-    teacherId: session.user.id
-  }
-
+  // Show all courses for admin
   const [courses, total] = await Promise.all([
     prisma.course.findMany({
-      where,
       include: {
         organization: {
           select: {
             name: true
+          }
+        },
+        teacher: {
+          select: {
+            name: true,
+            email: true
           }
         },
         _count: {
@@ -48,7 +48,7 @@ export default async function TeacherCoursesPage({
       skip,
       take: perPage
     }),
-    prisma.course.count({ where })
+    prisma.course.count()
   ])
 
   const pagination = {
@@ -61,16 +61,13 @@ export default async function TeacherCoursesPage({
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">我的课程</h1>
-        <Link href="/teacher/courses/create">
-          <Button>+ 创建课程</Button>
-        </Link>
+        <h1 className="text-3xl font-bold">课程管理</h1>
       </div>
 
       <Card className="mica">
         <CardHeader>
-          <CardTitle>课程列表</CardTitle>
-          <CardDescription>管理您创建的所有课程</CardDescription>
+          <CardTitle>全部课程</CardTitle>
+          <CardDescription>查看和管理系统中的所有课程</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -78,6 +75,7 @@ export default async function TeacherCoursesPage({
               <TableRow>
                 <TableHead>课程名称</TableHead>
                 <TableHead>课程代码</TableHead>
+                <TableHead>教师</TableHead>
                 <TableHead>组织</TableHead>
                 <TableHead>学生数</TableHead>
                 <TableHead>作业数</TableHead>
@@ -88,7 +86,7 @@ export default async function TeacherCoursesPage({
             <TableBody>
               {courses.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">
                     暂无课程
                   </TableCell>
                 </TableRow>
@@ -101,6 +99,7 @@ export default async function TeacherCoursesPage({
                       </Link>
                     </TableCell>
                     <TableCell>{course.code}</TableCell>
+                    <TableCell>{course.teacher.name}</TableCell>
                     <TableCell>{course.organization.name}</TableCell>
                     <TableCell>{course._count.enrollments}</TableCell>
                     <TableCell>{course._count.assignments}</TableCell>
@@ -129,7 +128,7 @@ export default async function TeacherCoursesPage({
                 显示第 {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, pagination.total)} 条，共 {pagination.total} 条
               </div>
               <div className="flex gap-2">
-                <Link href={`/teacher/courses?page=${pagination.page - 1}`}>
+                <Link href={`/admin/courses?page=${pagination.page - 1}`}>
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -141,7 +140,7 @@ export default async function TeacherCoursesPage({
                 <div className="flex items-center gap-1 text-sm">
                   第 {pagination.page} / {pagination.totalPages} 页
                 </div>
-                <Link href={`/teacher/courses?page=${pagination.page + 1}`}>
+                <Link href={`/admin/courses?page=${pagination.page + 1}`}>
                   <Button 
                     variant="outline" 
                     size="sm"

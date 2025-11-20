@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -18,8 +18,8 @@ export default async function StudentLayout({
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r mica">
-        <div className="p-6">
+      <aside className="w-64 bg-card border-r mica flex flex-col">
+        <div className="p-6 flex-1">
           <h2 className="text-2xl font-bold mb-8">IntelliTeach</h2>
           <nav className="space-y-2">
             <Link href="/student/dashboard">
@@ -33,6 +33,22 @@ export default async function StudentLayout({
               </Button>
             </Link>
           </nav>
+        </div>
+        
+        {/* User info and logout */}
+        <div className="p-6 border-t">
+          <div className="mb-3">
+            <p className="text-sm font-medium">{session.user.name}</p>
+            <p className="text-xs text-muted-foreground">{session.user.email}</p>
+          </div>
+          <form action={async () => {
+            "use server"
+            await signOut({ redirectTo: "/login" })
+          }}>
+            <Button type="submit" variant="outline" className="w-full">
+              🚪 退出登录
+            </Button>
+          </form>
         </div>
       </aside>
 

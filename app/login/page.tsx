@@ -30,7 +30,10 @@ export default function LoginPage() {
         toast.error("登录失败：" + result.error)
       } else {
         toast.success("登录成功")
-        router.push("/")
+        
+        // The middleware will redirect to the appropriate dashboard
+        // based on the user's role from the auth callback
+        router.push("/dashboard-redirect")
         router.refresh()
       }
     } catch (error) {

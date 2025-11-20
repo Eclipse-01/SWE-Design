@@ -108,3 +108,38 @@ export async function archiveCourse(courseId: string) {
     return { success: false, error: "归档课程失败" }
   }
 }
+
+export async function deleteCourse(courseId: string) {
+  const session = await auth()
+  
+  if (!session || (session.user.role !== 'TEACHER' && session.user.role !== 'SUPER_ADMIN')) {
+    return { success: false, error: "未授权" }
+  }
+
+  try {
+    // Verify the course belongs to the teacher (unless super admin)
+    if (session.user.role === 'TEACHER') {
+      const course = await prisma.course.findFirst({
+        where: {
+          idString: courseId,
+          teacherId: session.user.id
+        }
+      })
+
+      if (!course) {
+        return { success: false, error: "课程不存在或您无权操作" }
+      }
+    }
+
+    // Delete the course (cascade delete will handle related records)
+    await prisma.course.delete({
+      where: { idString: courseId }
+    })
+
+    revalidatePath("/teacher/courses")
+    return { success: true }
+  } catch (error) {
+    console.error("Delete course error:", error)
+    return { success: false, error: "删除课程失败" }
+  }
+}
