@@ -9,7 +9,7 @@
 
 ### 2. Teacher Grading
 - ✅ Manual grading with score and feedback
-- ✅ AI-assisted grading using Google Gemini API
+- ✅ AI-assisted grading using 智谱AI GLM API
 - ✅ Dedicated submissions page for each assignment
 - ✅ Grading dialog with AI analysis support
 - ✅ Display of AI feedback to students (strengths and weaknesses)

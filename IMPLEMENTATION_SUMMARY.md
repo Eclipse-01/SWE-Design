@@ -262,7 +262,7 @@
 
 **评分要素**:
 - ✅ SaaS 多租户架构
-- ✅ Gemini 2.0 Flash AI 深度集成
+- ✅ 智谱AI GLM-4-Flash AI 深度集成
 - ✅ JSON Mode 结构化响应
 - ✅ 订阅守卫智能 Token 管理
 
@@ -343,7 +343,7 @@
    - Token 订阅管理
 
 3. **AI 深度集成**
-   - Gemini 2.0 Flash 模型
+   - 智谱AI GLM-4-Flash 模型
    - JSON Mode 结构化输出
    - 智能评分反馈
 
