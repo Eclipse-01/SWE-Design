@@ -91,13 +91,13 @@ export default async function TeacherDashboard() {
   })
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">教师控制台</h1>
-        <p className="text-muted-foreground">欢迎回来，{session.user.name}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">教师控制台</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">欢迎回来，{session.user.name}</p>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card className="mica">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -168,38 +168,40 @@ export default async function TeacherDashboard() {
             <CardDescription>最近有学生提交的作业</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>作业标题</TableHead>
-                  <TableHead>课程</TableHead>
-                  <TableHead>截止时间</TableHead>
-                  <TableHead>待批改数</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentPendingAssignments.map((assignment) => (
-                  <TableRow key={assignment.id}>
-                    <TableCell className="font-medium">{assignment.title}</TableCell>
-                    <TableCell>{assignment.course.name}</TableCell>
-                    <TableCell>
-                      {format(new Date(assignment.deadline), 'MM月dd日 HH:mm', { locale: zhCN })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {assignment._count.submissions}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/teacher/courses/${assignment.courseId}/assignments/${assignment.id}`}>
-                        <Button variant="outline" size="sm">批改</Button>
-                      </Link>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>作业标题</TableHead>
+                    <TableHead className="hidden sm:table-cell">课程</TableHead>
+                    <TableHead>截止时间</TableHead>
+                    <TableHead className="hidden md:table-cell">待批改数</TableHead>
+                    <TableHead className="text-right">操作</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {recentPendingAssignments.map((assignment) => (
+                    <TableRow key={assignment.id}>
+                      <TableCell className="font-medium">{assignment.title}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{assignment.course.name}</TableCell>
+                      <TableCell className="text-sm">
+                        {format(new Date(assignment.deadline), 'MM/dd HH:mm', { locale: zhCN })}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="secondary">
+                          {assignment._count.submissions}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/teacher/courses/${assignment.courseId}/assignments/${assignment.id}`}>
+                          <Button variant="outline" size="sm">批改</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}
