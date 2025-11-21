@@ -205,7 +205,7 @@ export default async function StudentDashboard() {
                         <TableCell className="font-medium">{assignment.title}</TableCell>
                         <TableCell className="hidden sm:table-cell">{assignment.course.name}</TableCell>
                         <TableCell className="text-sm">
-                          {format(new Date(assignment.deadline), 'MM/dd HH:mm', { locale: zhCN })}
+                          {format(new Date(assignment.deadline), 'MM月dd日 HH:mm', { locale: zhCN })}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Badge variant={isOverdue ? "destructive" : "secondary"}>
