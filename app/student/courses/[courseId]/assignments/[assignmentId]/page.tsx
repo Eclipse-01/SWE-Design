@@ -43,7 +43,7 @@ export default async function AssignmentPage({
   // Based on my action logic: if (new Date() > assignment.deadline) return error. So strict deadline.
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 md:space-y-8">
       <div className="flex items-center gap-4">
         <Link href={`/student/courses/${params.courseId}`}>
           <Button variant="ghost" size="icon">
@@ -51,8 +51,8 @@ export default async function AssignmentPage({
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">{assignment.title}</h1>
-          <p className="text-muted-foreground">{assignment.course.name}</p>
+          <h1 className="text-xl md:text-2xl font-bold">{assignment.title}</h1>
+          <p className="text-sm text-muted-foreground">{assignment.course.name}</p>
         </div>
       </div>
 

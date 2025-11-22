@@ -60,7 +60,7 @@ export default async function AssignmentSubmissionsPage({
   })
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8 pb-20 md:pb-8">
       {/* Header */}
       <div className="mb-8">
         <Link 
@@ -69,12 +69,12 @@ export default async function AssignmentSubmissionsPage({
         >
           ← 返回课程
         </Link>
-        <h1 className="text-3xl font-bold mb-2">{assignment.title}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">{assignment.title}</h1>
         <p className="text-muted-foreground">{assignment.course.name}</p>
       </div>
 
       {/* Assignment Info */}
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">截止时间</CardTitle>
@@ -115,64 +115,118 @@ export default async function AssignmentSubmissionsPage({
           <CardDescription>查看和批改学生作业</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>学生姓名</TableHead>
-                <TableHead>提交时间</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead>分数</TableHead>
-                <TableHead>操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {submissions.length === 0 ? (
+          {/* Desktop Table */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    暂无提交
-                  </TableCell>
+                  <TableHead>学生姓名</TableHead>
+                  <TableHead>提交时间</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>分数</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
-              ) : (
-                submissions.map((submission) => (
-                  <TableRow key={submission.id}>
-                    <TableCell className="font-medium">
-                      {submission.student.name}
+              </TableHeader>
+              <TableBody>
+                {submissions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      暂无提交
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  submissions.map((submission) => (
+                    <TableRow key={submission.id}>
+                      <TableCell className="font-medium">
+                        {submission.student.name}
+                        <div className="text-xs text-muted-foreground">{submission.student.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(submission.submittedAt), "yyyy-MM-dd HH:mm", { locale: zhCN })}
+                      </TableCell>
+                      <TableCell>
+                        {submission.status === 'GRADED' ? (
+                          <Badge variant="default">已批改</Badge>
+                        ) : submission.status === 'SUBMITTED' ? (
+                          <Badge variant="secondary">待批改</Badge>
+                        ) : (
+                          <Badge variant="outline">未提交</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {submission.score !== null ? (
+                          <span className="font-semibold">{submission.score} / {assignment.maxScore}</span>
+                        ) : (
+                          <span className="text-muted-foreground">未评分</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <GradeSubmissionDialog
+                          submissionId={submission.id}
+                          studentName={submission.student.name}
+                          submissionContent={submission.content}
+                          maxScore={assignment.maxScore}
+                          currentScore={submission.score}
+                          currentFeedback={submission.teacherFeedback}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card List */}
+          <div className="md:hidden space-y-4">
+            {submissions.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                暂无提交
+              </div>
+            ) : (
+              submissions.map((submission) => (
+                <div key={submission.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{submission.student.name}</div>
                       <div className="text-xs text-muted-foreground">{submission.student.email}</div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(submission.submittedAt), "yyyy-MM-dd HH:mm", { locale: zhCN })}
-                    </TableCell>
-                    <TableCell>
-                      {submission.status === 'GRADED' ? (
-                        <Badge variant="default">已批改</Badge>
-                      ) : submission.status === 'SUBMITTED' ? (
-                        <Badge variant="secondary">待批改</Badge>
-                      ) : (
-                        <Badge variant="outline">未提交</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
+                    </div>
+                    {submission.status === 'GRADED' ? (
+                      <Badge variant="default">已批改</Badge>
+                    ) : submission.status === 'SUBMITTED' ? (
+                      <Badge variant="secondary">待批改</Badge>
+                    ) : (
+                      <Badge variant="outline">未提交</Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="text-muted-foreground">
+                      {format(new Date(submission.submittedAt), "MM-dd HH:mm", { locale: zhCN })}
+                    </div>
+                    <div>
                       {submission.score !== null ? (
                         <span className="font-semibold">{submission.score} / {assignment.maxScore}</span>
                       ) : (
                         <span className="text-muted-foreground">未评分</span>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <GradeSubmissionDialog
-                        submissionId={submission.id}
-                        studentName={submission.student.name}
-                        submissionContent={submission.content}
-                        maxScore={assignment.maxScore}
-                        currentScore={submission.score}
-                        currentFeedback={submission.teacherFeedback}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t flex justify-end">
+                    <GradeSubmissionDialog
+                      submissionId={submission.id}
+                      studentName={submission.student.name}
+                      submissionContent={submission.content}
+                      maxScore={assignment.maxScore}
+                      currentScore={submission.score}
+                      currentFeedback={submission.teacherFeedback}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

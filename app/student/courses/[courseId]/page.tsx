@@ -63,14 +63,14 @@ export default async function StudentCoursePage({
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex justify-between items-start">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">{course.name}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">{course.name}</h1>
           <p className="text-muted-foreground">{course.code} • {course.teacher.name}</p>
         </div>
-        <Link href="/student/courses">
-          <Button variant="outline">返回课程列表</Button>
+        <Link href="/student/courses" className="w-full md:w-auto">
+          <Button variant="outline" className="w-full md:w-auto">返回课程列表</Button>
         </Link>
       </div>
 

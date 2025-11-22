@@ -168,7 +168,8 @@ export default async function TeacherDashboard() {
             <CardDescription>最近有学生提交的作业</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -201,6 +202,31 @@ export default async function TeacherDashboard() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {recentPendingAssignments.map((assignment) => (
+                <div key={assignment.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{assignment.title}</div>
+                      <div className="text-sm text-muted-foreground">{assignment.course.name}</div>
+                    </div>
+                    <Badge variant="secondary">
+                      待批改: {assignment._count.submissions}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="text-muted-foreground">
+                      截止: {format(new Date(assignment.deadline), 'MM月dd日 HH:mm', { locale: zhCN })}
+                    </div>
+                    <Link href={`/teacher/courses/${assignment.courseId}/assignments/${assignment.id}`}>
+                      <Button variant="outline" size="sm">批改</Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

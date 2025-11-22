@@ -80,42 +80,83 @@ export default async function StudentCoursesPage({
           <CardDescription>您参与的所有课程</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>课程名称</TableHead>
-                <TableHead>课程代码</TableHead>
-                <TableHead>教师</TableHead>
-                <TableHead>组织</TableHead>
-                <TableHead>作业数</TableHead>
-                <TableHead>加入时间</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {enrollments.length === 0 ? (
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    暂无课程
-                  </TableCell>
+                  <TableHead>课程名称</TableHead>
+                  <TableHead>课程代码</TableHead>
+                  <TableHead>教师</TableHead>
+                  <TableHead>组织</TableHead>
+                  <TableHead>作业数</TableHead>
+                  <TableHead>加入时间</TableHead>
                 </TableRow>
-              ) : (
-                enrollments.map((enrollment) => (
-                  <TableRow key={enrollment.id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/student/courses/${enrollment.course.idString}`} className="hover:underline text-primary">
-                        {enrollment.course.name}
-                      </Link>
+              </TableHeader>
+              <TableBody>
+                {enrollments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">
+                      暂无课程
                     </TableCell>
-                    <TableCell>{enrollment.course.code}</TableCell>
-                    <TableCell>{enrollment.course.teacher.name}</TableCell>
-                    <TableCell>{enrollment.course.organization.name}</TableCell>
-                    <TableCell>{enrollment.course._count.assignments}</TableCell>
-                    <TableCell>{new Date(enrollment.joinedAt).toLocaleDateString('zh-CN')}</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  enrollments.map((enrollment) => (
+                    <TableRow key={enrollment.id}>
+                      <TableCell className="font-medium">
+                        <Link href={`/student/courses/${enrollment.course.idString}`} className="hover:underline text-primary">
+                          {enrollment.course.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{enrollment.course.code}</TableCell>
+                      <TableCell>{enrollment.course.teacher.name}</TableCell>
+                      <TableCell>{enrollment.course.organization.name}</TableCell>
+                      <TableCell>{enrollment.course._count.assignments}</TableCell>
+                      <TableCell>{new Date(enrollment.joinedAt).toLocaleDateString('zh-CN')}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {enrollments.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                暂无课程
+              </div>
+            ) : (
+              enrollments.map((enrollment) => (
+                <Card key={enrollment.id} className="bg-card/50">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <Link href={`/student/courses/${enrollment.course.idString}`} className="font-bold text-lg hover:underline text-primary block mb-1">
+                          {enrollment.course.name}
+                        </Link>
+                        <div className="text-sm text-muted-foreground">{enrollment.course.code}</div>
+                      </div>
+                      <div className="text-xs bg-secondary px-2 py-1 rounded">
+                        {enrollment.course.organization.name}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                      <div>
+                        <span className="text-muted-foreground">教师:</span> {enrollment.course.teacher.name}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">作业:</span> {enrollment.course._count.assignments}
+                      </div>
+                      <div className="col-span-2 text-xs text-muted-foreground">
+                        加入时间: {new Date(enrollment.joinedAt).toLocaleDateString('zh-CN')}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between px-2 py-4">
               <div className="text-sm text-muted-foreground">

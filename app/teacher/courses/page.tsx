@@ -73,56 +73,109 @@ export default async function TeacherCoursesPage({
           <CardDescription>管理您创建的所有课程</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>课程名称</TableHead>
-                <TableHead>课程代码</TableHead>
-                <TableHead>组织</TableHead>
-                <TableHead>学生数</TableHead>
-                <TableHead>作业数</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead className="text-right">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {courses.length === 0 ? (
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    暂无课程
-                  </TableCell>
+                  <TableHead>课程名称</TableHead>
+                  <TableHead>课程代码</TableHead>
+                  <TableHead>组织</TableHead>
+                  <TableHead>学生数</TableHead>
+                  <TableHead>作业数</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
                 </TableRow>
-              ) : (
-                courses.map((course) => (
-                  <TableRow key={course.idString}>
-                    <TableCell className="font-medium">
-                      <Link href={`/teacher/courses/${course.idString}`} className="hover:underline">
-                        {course.name}
-                      </Link>
+              </TableHeader>
+              <TableBody>
+                {courses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      暂无课程
                     </TableCell>
-                    <TableCell>{course.code}</TableCell>
-                    <TableCell>{course.organization.name}</TableCell>
-                    <TableCell>{course._count.enrollments}</TableCell>
-                    <TableCell>{course._count.assignments}</TableCell>
-                    <TableCell>
+                  </TableRow>
+                ) : (
+                  courses.map((course) => (
+                    <TableRow key={course.idString}>
+                      <TableCell className="font-medium">
+                        <Link href={`/teacher/courses/${course.idString}`} className="hover:underline">
+                          {course.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{course.code}</TableCell>
+                      <TableCell>{course.organization.name}</TableCell>
+                      <TableCell>{course._count.enrollments}</TableCell>
+                      <TableCell>{course._count.assignments}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          course.archived ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
+                        }`}>
+                          {course.archived ? '已归档' : '活跃'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <CourseActions
+                          courseId={course.idString}
+                          courseName={course.name}
+                          isArchived={course.archived}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {courses.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                暂无课程
+              </div>
+            ) : (
+              courses.map((course) => (
+                <Card key={course.idString} className="bg-card/50">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <Link href={`/teacher/courses/${course.idString}`} className="font-bold text-lg hover:underline block mb-1">
+                          {course.name}
+                        </Link>
+                        <div className="text-sm text-muted-foreground">{course.code}</div>
+                      </div>
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         course.archived ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
                       }`}>
                         {course.archived ? '已归档' : '活跃'}
                       </span>
-                    </TableCell>
-                    <TableCell className="text-right">
+                    </div>
+                    
+                    <div className="text-xs bg-secondary px-2 py-1 rounded inline-block">
+                      {course.organization.name}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">学生:</span> {course._count.enrollments}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">作业:</span> {course._count.assignments}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t flex justify-end">
                       <CourseActions
                         courseId={course.idString}
                         courseName={course.name}
                         isArchived={course.archived}
                       />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between px-2 py-4">
               <div className="text-sm text-muted-foreground">

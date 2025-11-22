@@ -186,7 +186,8 @@ export default async function StudentDashboard() {
             <CardDescription>按截止时间排序</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -224,6 +225,36 @@ export default async function StudentDashboard() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {recentPendingAssignments.map((assignment) => {
+                const isOverdue = new Date() > new Date(assignment.deadline)
+                return (
+                  <div key={assignment.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium">{assignment.title}</div>
+                        <div className="text-sm text-muted-foreground">{assignment.course.name}</div>
+                      </div>
+                      <Badge variant={isOverdue ? "destructive" : "secondary"}>
+                        {isOverdue ? '已截止' : '进行中'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="text-muted-foreground">
+                        截止: {format(new Date(assignment.deadline), 'MM月dd日 HH:mm', { locale: zhCN })}
+                      </div>
+                      <Link href={`/student/courses/${assignment.courseId}/assignments/${assignment.id}`}>
+                        <Button variant="outline" size="sm" disabled={isOverdue}>
+                          {isOverdue ? '已截止' : '提交'}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LayoutDashboard, BookOpen, Settings, Menu } from "lucide-react"
 
+import { MobileNav } from "@/components/mobile-nav"
+
 export default async function TeacherLayout({
   children,
 }: {
@@ -20,13 +22,13 @@ export default async function TeacherLayout({
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+      <div className="md:hidden flex items-center justify-between p-4 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
         <h2 className="text-xl font-bold">IntelliTeach</h2>
         <ThemeToggle />
       </div>
 
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-card border-r mica flex flex-col md:min-h-screen">
+      <aside className="hidden md:flex w-64 bg-card border-r mica flex-col md:min-h-screen">
         <div className="p-4 md:p-6 flex-1">
           <div className="hidden md:flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold">IntelliTeach</h2>
@@ -72,11 +74,13 @@ export default async function TeacherLayout({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 bg-background overflow-auto">
+      <main className="flex-1 bg-background overflow-auto pb-20 md:pb-0">
         <div className="h-full">
           {children}
         </div>
       </main>
+      
+      <MobileNav role="teacher" />
     </div>
   )
 }
